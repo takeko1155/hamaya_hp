@@ -151,17 +151,22 @@ h1, h2, h3 { font-weight: 600; line-height: 1.5; margin: 0; }
   background: var(--ink); color: var(--paper);
   height: 100svh; min-height: 560px;
 }
-/* slow dissolve slideshow: JS toggles .is-active; fade 3s, drift 12s */
+/* slow dissolve slideshow with a gentle sideways pan: JS toggles .is-active; fade 3s, pan 12s.
+   Slides alternate direction; scale(1.16) keeps the edges covered while panning ±6%. */
 .hero-slides { position: absolute; inset: 0; overflow: hidden; }
 .hero-slide {
+  --x-from: -6%; --x-to: 6%;
   position: absolute; inset: 0;
   background-position: var(--pos, center); background-size: cover; background-repeat: no-repeat;
   filter: brightness(.9);
-  opacity: 0; transform: scale(1.08);
-  transition: opacity 3s ease-in-out, transform 12s linear;
+  opacity: 0; transform: scale(1.16) translateX(var(--x-from));
+  transition: opacity 3s ease-in-out, transform 13s linear;
 }
-.hero-slide.is-active { opacity: 1; transform: scale(1); }
-.hero-slide.is-leaving { opacity: 0; transform: scale(1); }
+.hero-slide:nth-child(even) { --x-from: 6%; --x-to: -6%; }
+/* first slide is visible immediately (no fade-in); JS then adds .is-active to start its pan */
+.hero-slide.is-first { opacity: 1; transition: transform 13s linear; }
+.hero-slide.is-active { opacity: 1; transform: scale(1.16) translateX(var(--x-to)); }
+.hero-slide.is-leaving { opacity: 0; transform: scale(1.16) translateX(var(--x-to)); }
 /* shade only the bottom-left corner where the text sits */
 .hero::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -196,7 +201,7 @@ h1, h2, h3 { font-weight: 600; line-height: 1.5; margin: 0; }
   html { scroll-behavior: auto; }
   .hero-copy { animation: none; }
   .hero-slide { transition: opacity 3s ease-in-out; transform: none; }
-  .hero-slide.is-active { transform: none; }
+  .hero-slide.is-active, .hero-slide.is-leaving { transform: none; }
 }
 
 /* ---------- section headings ---------- */

@@ -73,6 +73,7 @@
       await load(next);
       if (!document.hidden) {
         const prev = slides[current];
+        prev.classList.remove('is-first');
         prev.classList.replace('is-active', 'is-leaving');
         setTimeout(() => prev.classList.remove('is-leaving'), FADE + 100);
         slides[next].classList.add('is-active');
@@ -80,6 +81,8 @@
       }
       setTimeout(advance, HOLD);
     };
+    // start the first slide's pan on the next frame so the transition runs
+    requestAnimationFrame(() => requestAnimationFrame(() => slides[0].classList.add('is-active')));
     setTimeout(advance, HOLD);
     window.addEventListener('load', () => slides.forEach((_, i) => load(i)));
   }
