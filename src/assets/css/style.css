@@ -360,7 +360,7 @@ summary.news-head:hover .news-title { text-decoration: underline; text-underline
 .about-main { width: 100%; aspect-ratio: 5 / 4; object-fit: cover; object-position: 50% 30%; }
 .about-sub {
   position: absolute; right: clamp(-56px, -4vw, -16px); bottom: 0;
-  width: 30%; aspect-ratio: 1; object-fit: cover;
+  width: 30%; aspect-ratio: 1; object-fit: cover; object-position: 15% 20%;
   border: 8px solid var(--paper);
 }
 .about-copy { display: flex; gap: clamp(28px, 4vw, 56px); align-items: flex-start; }
@@ -380,9 +380,10 @@ summary.news-head:hover .news-title { text-decoration: underline; text-underline
 .about-points article:hover img { transform: scale(1.04); }
 /* two photos split by a diagonal (座敷 | カウンター), with a thin white seam */
 .about-points .split { position: relative; aspect-ratio: 3 / 2; }
-.about-points .split img { position: absolute; inset: 0; height: 100%; }
-.about-points .split img:first-child { clip-path: polygon(0 0, 59.5% 0, 39.5% 100%, 0 100%); }
-.about-points .split img:last-child { clip-path: polygon(60.5% 0, 100% 0, 100% 100%, 40.5% 100%); object-position: 70% 50%; }
+/* each photo gets its own 60%-wide box (≈ square, so little is cropped); the diagonal runs 60% → 40% */
+.about-points .split img { position: absolute; top: 0; width: 60%; height: 100%; }
+.about-points .split img:first-child { left: 0; clip-path: polygon(0 0, 99.2% 0, 65.8% 100%, 0 100%); }
+.about-points .split img:last-child { left: 40%; clip-path: polygon(34.2% 0, 100% 0, 100% 100%, 0.8% 100%); }
 .point-no { font-family: var(--serif); font-weight: 400; font-size: 32px; line-height: 1; color: #cfcfcf; margin-bottom: 6px !important; }
 .about-points h3 { font-size: 19px; letter-spacing: .25em; margin-bottom: 14px; }
 .about-points p:not(.point-no) { font-size: 14px; color: var(--ink-2); }
