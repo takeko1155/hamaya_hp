@@ -1,0 +1,9 @@
+{
+  "name": "hamaya-hp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/build.mjs && npx --yes serve dist -l 4173"
+  }
+}

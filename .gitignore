@@ -1,0 +1,4 @@
+dist/
+_source/
+node_modules/
+.claude/

@@ -1,0 +1,26 @@
+{
+  "main": {
+    "label": "お食事",
+    "note": "昼・夜 共通のお品書きです",
+    "pages": [
+      { "src": "assets/menu/lunch-01.webp", "alt": "雲丹イカ三昧御膳" },
+      { "src": "assets/menu/lunch-02.webp", "alt": "うに釜めし御膳・うに釜めしの食べ方" },
+      { "src": "assets/menu/lunch-03.webp", "alt": "釜飯 御膳・単品" },
+      { "src": "assets/menu/lunch-04.webp", "alt": "釜飯 各種" },
+      { "src": "assets/menu/lunch-05.webp", "alt": "定食 磯盛り定食・からあげ定食・あら煮定食" },
+      { "src": "assets/menu/lunch-06.webp", "alt": "海鮮丼・生うに丼" },
+      { "src": "assets/menu/lunch-07.webp", "alt": "一品料理・お飲み物" },
+      { "src": "assets/menu/lunch-08.webp", "alt": "仙崎イカ釜めし御膳" }
+    ]
+  },
+  "dinner": {
+    "label": "夜の洋食",
+    "note": "18:00〜 ／ 事前予約制",
+    "pages": [
+      { "src": "assets/menu/dinner-01.webp", "alt": "セットメニュー" },
+      { "src": "assets/menu/dinner-02.webp", "alt": "メインディッシュ・パスタ・ピッツァ" },
+      { "src": "assets/menu/dinner-03.webp", "alt": "ドリンクメニュー" },
+      { "src": "assets/menu/dinner-04.webp", "alt": "団体様プラン・飲み放題" }
+    ]
+  }
+}
