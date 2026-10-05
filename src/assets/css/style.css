@@ -378,6 +378,11 @@ summary.news-head:hover .news-title { text-decoration: underline; text-underline
 .about-points figure { margin: 0 0 22px; overflow: hidden; }
 .about-points img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; transition: transform 1.2s; }
 .about-points article:hover img { transform: scale(1.04); }
+/* two photos split by a diagonal (座敷 | カウンター), with a thin white seam */
+.about-points .split { position: relative; aspect-ratio: 3 / 2; }
+.about-points .split img { position: absolute; inset: 0; height: 100%; }
+.about-points .split img:first-child { clip-path: polygon(0 0, 59.5% 0, 39.5% 100%, 0 100%); }
+.about-points .split img:last-child { clip-path: polygon(60.5% 0, 100% 0, 100% 100%, 40.5% 100%); object-position: 70% 50%; }
 .point-no { font-family: var(--serif); font-weight: 400; font-size: 32px; line-height: 1; color: #cfcfcf; margin-bottom: 6px !important; }
 .about-points h3 { font-size: 19px; letter-spacing: .25em; margin-bottom: 14px; }
 .about-points p:not(.point-no) { font-size: 14px; color: var(--ink-2); }
