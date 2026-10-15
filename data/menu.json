@@ -1,7 +1,6 @@
 {
   "main": {
     "label": "お食事",
-    "note": "昼・夜 共通のお品書きです",
     "pages": [
       {
         "src": "assets/menu/lunch-01.webp",

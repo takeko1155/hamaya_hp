@@ -102,8 +102,8 @@ ${groups
 ${groups
   .map(
     ([key, g], i) => `      <div class="menu-panel" id="panel-${key}" role="tabpanel" aria-labelledby="tab-${key}"${i ? ' hidden' : ''}>
-        <p class="menu-panel-note">${esc(g.note ?? '')}</p>
-        <ul class="menu-grid">
+${g.note ? `        <p class="menu-panel-note">${esc(g.note)}</p>
+` : ''}        <ul class="menu-grid">
 ${(g.pages ?? [])
   .map(
     (p) =>
@@ -117,8 +117,8 @@ ${(g.pages ?? [])
 
 function renderSingleMenu([key, g]) {
   return `      <div class="menu-panel" id="panel-${key}">
-        <p class="menu-panel-note">${esc(g.note ?? '')}</p>
-        <ul class="menu-grid">
+${g.note ? `        <p class="menu-panel-note">${esc(g.note)}</p>
+` : ''}        <ul class="menu-grid">
 ${(g.pages ?? [])
   .map(
     (p) =>
