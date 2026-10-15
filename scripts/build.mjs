@@ -89,7 +89,9 @@ const thumbOf = (src) => {
   return fs.existsSync(path.join(SRC, t)) ? t : src;
 };
 
-const menuHtml = `      <div class="menu-tabs" role="tablist" aria-label="お品書きの種類">
+// With a single menu group there is nothing to switch, so render it without tabs.
+const singleMenu = groups.length === 1;
+const menuHtml = singleMenu ? renderSingleMenu(groups[0]) : `      <div class="menu-tabs" role="tablist" aria-label="お品書きの種類">
 ${groups
   .map(
     ([key, g], i) =>
@@ -112,6 +114,20 @@ ${(g.pages ?? [])
       </div>`
   )
   .join('\n')}`;
+
+function renderSingleMenu([key, g]) {
+  return `      <div class="menu-panel" id="panel-${key}">
+        <p class="menu-panel-note">${esc(g.note ?? '')}</p>
+        <ul class="menu-grid">
+${(g.pages ?? [])
+  .map(
+    (p) =>
+      `          <li><button type="button" data-full="${esc(p.src)}"><img src="${esc(thumbOf(p.src))}" alt="${esc(p.alt ?? g.label)}" width="520" height="736" loading="lazy" decoding="async"><span class="cap">${esc(p.alt ?? '')}</span></button></li>`
+  )
+  .join('\n')}
+        </ul>
+      </div>`;
+}
 
 // ---------- structured data ----------
 const jsonld = {
