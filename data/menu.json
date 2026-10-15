@@ -27,12 +27,12 @@
         "alt": "海鮮丼・生うに丼"
       },
       {
-        "src": "assets/menu/lunch-08.webp",
-        "alt": "仙崎イカ釜めし御膳"
-      },
-      {
         "src": "assets/menu/lunch-07.webp",
         "alt": "一品料理・お飲み物"
+      },
+      {
+        "src": "assets/menu/lunch-08.webp",
+        "alt": "仙崎イカ釜めし御膳"
       }
     ]
   }
