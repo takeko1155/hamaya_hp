@@ -16,10 +16,9 @@ const readJson = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-// Escape first, then turn URLs and phone numbers into links.
+// Plain text only (the admin screen rejects URLs). Phone numbers become tap-to-call links.
 const linkify = (text) =>
   esc(text)
-    .replace(/https?:\/\/[^\s<>"']+/g, (url) => `<a href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a>`)
     .replace(/(?<![\d\/-])(0\d{1,4}-\d{1,4}-\d{3,4})(?![\d-])/g, (tel) => `<a href="tel:${tel}">${tel}</a>`)
     .replace(/\n/g, '<br>');
 
@@ -36,6 +35,10 @@ const newsItems = (Array.isArray(news) ? news : [])
     if (!/^\d{4}-\d{2}-\d{2}$/.test(n.date ?? '')) errors.push(`news[${i}]: 日付が不正です (${n.date})`);
     if (!n.title?.trim()) errors.push(`news[${i}]: タイトルが空です`);
     if (!Array.isArray(n.body)) errors.push(`news[${i}]: body は配列にしてください`);
+    // same limits as the admin screen (admin/), checked again here as a safety net
+    if ((n.title ?? '').length > 30) errors.push(`news[${i}]: タイトルが30文字を超えています`);
+    if ((n.body ?? []).join('').length > 300) errors.push(`news[${i}]: 本文が300文字を超えています`);
+    if (/https?:|www\./i.test(`${n.title} ${(n.body ?? []).join(' ')}`)) errors.push(`news[${i}]: URLは入れられません`);
     return true;
   })
   .sort((a, b) => (a.date < b.date ? 1 : -1))
@@ -89,6 +92,14 @@ const thumbOf = (src) => {
   return fs.existsSync(path.join(SRC, t)) ? t : src;
 };
 
+const renderPages = (g) =>
+  (g.pages ?? [])
+    .map(
+      (p) =>
+        `          <li><button type="button" data-full="${esc(p.src)}"><img src="${esc(thumbOf(p.src))}" alt="${esc(p.alt ?? g.label)}" width="520" height="736" loading="lazy" decoding="async"><span class="cap">${esc(p.alt ?? '')}</span></button></li>`
+    )
+    .join('\n');
+
 // With a single menu group there is nothing to switch, so render it without tabs.
 const singleMenu = groups.length === 1;
 const menuHtml = singleMenu ? renderSingleMenu(groups[0]) : `      <div class="menu-tabs" role="tablist" aria-label="お品書きの種類">
@@ -104,12 +115,7 @@ ${groups
     ([key, g], i) => `      <div class="menu-panel" id="panel-${key}" role="tabpanel" aria-labelledby="tab-${key}"${i ? ' hidden' : ''}>
 ${g.note ? `        <p class="menu-panel-note">${esc(g.note)}</p>
 ` : ''}        <ul class="menu-grid">
-${(g.pages ?? [])
-  .map(
-    (p) =>
-      `          <li><button type="button" data-full="${esc(p.src)}"><img src="${esc(thumbOf(p.src))}" alt="${esc(p.alt ?? g.label)}" width="520" height="736" loading="lazy" decoding="async"><span class="cap">${esc(p.alt ?? '')}</span></button></li>`
-  )
-  .join('\n')}
+${renderPages(g)}
         </ul>
       </div>`
   )
@@ -119,12 +125,7 @@ function renderSingleMenu([key, g]) {
   return `      <div class="menu-panel" id="panel-${key}">
 ${g.note ? `        <p class="menu-panel-note">${esc(g.note)}</p>
 ` : ''}        <ul class="menu-grid">
-${(g.pages ?? [])
-  .map(
-    (p) =>
-      `          <li><button type="button" data-full="${esc(p.src)}"><img src="${esc(thumbOf(p.src))}" alt="${esc(p.alt ?? g.label)}" width="520" height="736" loading="lazy" decoding="async"><span class="cap">${esc(p.alt ?? '')}</span></button></li>`
-  )
-  .join('\n')}
+${renderPages(g)}
         </ul>
       </div>`;
 }

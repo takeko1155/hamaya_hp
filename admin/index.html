@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root { --ink:#111; --sub:#666; --line:#ddd; --bg:#fff; --soft:#f5f5f3; --err:#b00020; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--soft); color:var(--ink); font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif; font-size:16px; line-height:1.6; }
+  header { background:var(--ink); color:#fff; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:5; }
+  header h1 { font-size:16px; margin:0; letter-spacing:.1em; font-weight:600; }
+  header a { color:#fff; font-size:13px; }
+  .tabs { display:flex; background:var(--bg); border-bottom:1px solid var(--line); position:sticky; top:52px; z-index:4; }
+  .tabs button { flex:1; padding:14px 0; font:inherit; font-weight:600; background:none; border:0; border-bottom:3px solid transparent; color:var(--sub); }
+  .tabs button[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--ink); }
+  main { max-width:640px; margin:0 auto; padding:16px 16px 120px; }
+  .panel[hidden] { display:none; }
+  .card { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:12px; }
+  .btn { font:inherit; font-size:15px; padding:10px 16px; border-radius:6px; border:1px solid var(--ink); background:var(--bg); color:var(--ink); }
+  .btn.primary { background:var(--ink); color:#fff; }
+  .btn.danger { border-color:var(--err); color:var(--err); }
+  .btn.small { font-size:14px; padding:7px 12px; }
+  .btn:disabled { opacity:.35; }
+  .btn.block { display:block; width:100%; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .muted { color:var(--sub); font-size:13px; }
+  label { display:block; font-weight:600; font-size:14px; margin:14px 0 6px; }
+  input[type=text], input[type=date], textarea { width:100%; font:inherit; padding:10px 12px; border:1px solid #bbb; border-radius:6px; background:#fff; }
+  textarea { min-height:180px; resize:vertical; }
+  .count { text-align:right; font-size:12px; color:var(--sub); margin-top:4px; }
+  .count.over { color:var(--err); font-weight:600; }
+  .news-item { display:flex; gap:12px; align-items:center; }
+  .news-item .meta { flex:1; min-width:0; }
+  .news-item .date { font-size:13px; color:var(--sub); }
+  .news-item .title { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .page { display:grid; grid-template-columns:88px 1fr; gap:12px; }
+  .page img { width:88px; height:124px; object-fit:cover; border:1px solid var(--line); border-radius:4px; background:var(--soft); }
+  .page .no { font-weight:700; font-size:14px; }
+  .page .new { font-size:12px; background:var(--ink); color:#fff; border-radius:3px; padding:1px 6px; margin-left:6px; }
+  .page input[type=text] { padding:8px 10px; font-size:15px; margin:6px 0 8px; }
+  .savebar { position:fixed; left:0; right:0; bottom:0; background:var(--ink); color:#fff; padding:12px 16px; display:flex; gap:10px; align-items:center; justify-content:space-between; z-index:6; }
+  .savebar[hidden] { display:none; }
+  .savebar .btn { border-color:#fff; }
+  .savebar .btn.primary { background:#fff; color:var(--ink); }
+  .toast { position:fixed; left:16px; right:16px; bottom:84px; background:#1b5e20; color:#fff; padding:12px 14px; border-radius:8px; z-index:7; box-shadow:0 4px 16px rgba(0,0,0,.2); }
+  .toast.error { background:var(--err); }
+  .toast[hidden] { display:none; }
+  .busy { position:fixed; inset:0; background:rgba(255,255,255,.8); display:grid; place-items:center; z-index:8; font-weight:600; }
+  .busy[hidden] { display:none; }
+  .denied { max-width:480px; margin:60px auto; padding:0 16px; text-align:center; }
+  .help { font-size:13px; color:var(--sub); background:var(--bg); border:1px dashed var(--line); border-radius:8px; padding:10px 12px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<? if (!allowed) { ?>
+  <div class="denied">
+    <h2>編集の権限がありません</h2>
+    <p>現在のアカウント：<?= email || '（取得できませんでした）' ?></p>
+    <p class="muted">登録された Google アカウントでログインし直してください。</p>
+  </div>
+<? } else { ?>
+  <header>
+    <h1>浜屋 ホームページ管理</h1>
+    <a href="<?= siteUrl ?>" target="_blank" rel="noopener">サイトを見る</a>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="news">お知らせ</button>
+    <button role="tab" aria-selected="false" data-tab="menu">お品書き</button>
+  </nav>
+
+  <main>
+    <!-- お知らせ -->
+    <section class="panel" id="panel-news">
+      <div id="news-list-view">
+        <button class="btn primary block" id="news-add">＋ 新しいお知らせ</button>
+        <p class="muted" style="margin:10px 2px 14px">保存するとすぐ、1〜2分でホームページに反映されます。</p>
+        <div id="news-list"></div>
+      </div>
+
+      <div id="news-edit-view" hidden>
+        <div class="card">
+          <label for="f-date">日付</label>
+          <input type="date" id="f-date" required>
+          <label for="f-title">タイトル</label>
+          <input type="text" id="f-title" maxlength="<?= limits.title ?>" autocomplete="off">
+          <div class="count" data-for="f-title"></div>
+          <label for="f-body">本文 <span class="muted">（文字だけ・空けたい行は空行に）</span></label>
+          <textarea id="f-body" maxlength="<?= limits.body ?>"></textarea>
+          <div class="count" data-for="f-body"></div>
+          <p class="muted">リンク（URL）は入れられません。電話番号は自動でタップして電話できるようになります。</p>
+          <div class="row" style="margin-top:14px">
+            <button class="btn primary" id="news-save">保存する</button>
+            <button class="btn" id="news-cancel">やめる</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- お品書き -->
+    <section class="panel" id="panel-menu" hidden>
+      <div class="help">写真の差し替え・追加・削除・並べ替えをしたら、最後に下の「保存する」を押してください。保存するまではホームページは変わりません。</div>
+      <div id="pages"></div>
+      <button class="btn block" id="page-add">＋ ページを追加（写真を選ぶ）</button>
+      <input type="file" id="file-input" accept="image/*" hidden>
+    </section>
+  </main>
+
+  <div class="savebar" id="savebar" hidden>
+    <span>未保存の変更があります</span>
+    <div class="row">
+      <button class="btn small" id="menu-revert">元に戻す</button>
+      <button class="btn small primary" id="menu-save">保存する</button>
+    </div>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+  <div class="busy" id="busy" hidden>保存しています…</div>
+
+<script>
+const LIMITS = <?!= JSON.stringify(limits) ?>;
+let state = { baseSha: null, news: [], pages: [], savedPages: [] };
+let editingIndex = -1; // -1 = new
+let fileTarget = null; // index to replace, or 'add'
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+const fmt = (d) => d.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$1/$2/$3');
+const hasUrl = (s) => /https?:|www\.|[a-z0-9-]+\.(com|jp|net|org|io|me|co)\b/i.test(s);
+
+function call(fn, ...args) {
+  return new Promise((resolve, reject) =>
+    google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](...args));
+}
+function toast(msg, error) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (error ? ' error' : '');
+  t.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (t.hidden = true), error ? 8000 : 4000);
+}
+function busy(on, text) { $('busy').hidden = !on; if (text) $('busy').textContent = text; }
+function errMsg(e) { return (e && e.message ? e.message : String(e)).replace(/^Exception: /, ''); }
+
+async function reload() {
+  busy(true, '読み込んでいます…');
+  try {
+    const d = await call('loadData');
+    state.baseSha = d.baseSha;
+    state.news = d.news;
+    state.pages = d.pages.map((p) => ({ ...p }));
+    state.savedPages = d.pages.map((p) => ({ ...p }));
+    renderNews();
+    renderPages();
+  } catch (e) {
+    toast('読み込めませんでした：' + errMsg(e), true);
+  } finally {
+    busy(false);
+  }
+}
+
+// ---------- tabs ----------
+document.querySelectorAll('.tabs button').forEach((b) =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    $('panel-news').hidden = b.dataset.tab !== 'news';
+    $('panel-menu').hidden = b.dataset.tab !== 'menu';
+  }));
+
+// ---------- お知らせ ----------
+function renderNews() {
+  const list = $('news-list');
+  if (!state.news.length) { list.innerHTML = '<p class="muted">お知らせはまだありません。</p>'; return; }
+  list.innerHTML = state.news.map((n, i) => `
+    <div class="card news-item">
+      <div class="meta"><div class="date">${fmt(n.date)}</div><div class="title">${esc(n.title)}</div></div>
+      <button class="btn small" data-edit="${i}">編集</button>
+      <button class="btn small danger" data-del="${i}">削除</button>
+    </div>`).join('');
+}
+$('news-list').addEventListener('click', async (e) => {
+  const edit = e.target.dataset.edit, del = e.target.dataset.del;
+  if (edit !== undefined) openEditor(+edit);
+  if (del !== undefined) {
+    const n = state.news[+del];
+    if (!confirm(`「${n.title}」を削除しますか？`)) return;
+    const next = state.news.filter((_, i) => i !== +del);
+    await saveNewsList(next, '削除しました。');
+  }
+});
+$('news-add').addEventListener('click', () => openEditor(-1));
+$('news-cancel').addEventListener('click', closeEditor);
+
+function openEditor(i) {
+  editingIndex = i;
+  const n = i >= 0 ? state.news[i] : { date: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10), title: '', body: '' };
+  $('f-date').value = n.date;
+  $('f-title').value = n.title;
+  $('f-body').value = n.body;
+  updateCounts();
+  $('news-list-view').hidden = true;
+  $('news-edit-view').hidden = false;
+  window.scrollTo(0, 0);
+}
+function closeEditor() {
+  $('news-edit-view').hidden = true;
+  $('news-list-view').hidden = false;
+}
+function updateCounts() {
+  document.querySelectorAll('.count').forEach((c) => {
+    const el = $(c.dataset.for);
+    const max = el.id === 'f-title' ? LIMITS.title : LIMITS.body;
+    c.textContent = `${el.value.length} / ${max}`;
+    c.classList.toggle('over', el.value.length > max);
+  });
+}
+['f-title', 'f-body'].forEach((id) => $(id).addEventListener('input', updateCounts));
+
+$('news-save').addEventListener('click', async () => {
+  const item = { date: $('f-date').value, title: $('f-title').value.trim(), body: $('f-body').value.trim() };
+  if (!item.date) return toast('日付を選んでください。', true);
+  if (!item.title) return toast('タイトルを入力してください。', true);
+  if (item.title.length > LIMITS.title) return toast(`タイトルは${LIMITS.title}文字までです。`, true);
+  if (item.body.length > LIMITS.body) return toast(`本文は${LIMITS.body}文字までです。`, true);
+  if (hasUrl(item.title + item.body)) return toast('リンク（URL）は入れられません。', true);
+  const next = state.news.slice();
+  if (editingIndex >= 0) next[editingIndex] = item; else next.unshift(item);
+  if (await saveNewsList(next, '保存しました。1〜2分でホームページに反映されます。')) closeEditor();
+});
+
+async function saveNewsList(list, okMsg) {
+  busy(true, '保存しています…');
+  try {
+    const r = await call('saveNews', list, state.baseSha);
+    state.baseSha = r.sha;
+    state.news = list.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    renderNews();
+    toast(okMsg);
+    return true;
+  } catch (e) {
+    toast(errMsg(e), true);
+    return false;
+  } finally {
+    busy(false);
+  }
+}
+
+// ---------- お品書き ----------
+function dirty() {
+  return JSON.stringify(state.pages.map((p) => [p.src || p.tmpId, p.alt])) !==
+         JSON.stringify(state.savedPages.map((p) => [p.src, p.alt]));
+}
+function renderPages() {
+  const n = state.pages.length;
+  $('pages').innerHTML = state.pages.map((p, i) => `
+    <div class="card page">
+      <img src="${p.image ? p.preview : esc(p.thumb)}" alt="">
+      <div>
+        <div class="no">${i + 1}ページ目${p.image ? '<span class="new">新しい写真</span>' : ''}</div>
+        <input type="text" data-alt="${i}" value="${esc(p.alt)}" maxlength="${LIMITS.alt}" placeholder="ページ名（例：釜めし）">
+        <div class="row">
+          <button class="btn small" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="上へ">↑</button>
+          <button class="btn small" data-down="${i}" ${i === n - 1 ? 'disabled' : ''} aria-label="下へ">↓</button>
+          <button class="btn small" data-replace="${i}">差し替え</button>
+          <button class="btn small danger" data-remove="${i}" ${n === 1 ? 'disabled' : ''}>削除</button>
+        </div>
+      </div>
+    </div>`).join('');
+  $('page-add').disabled = n >= LIMITS.pages;
+  $('savebar').hidden = !dirty();
+}
+$('pages').addEventListener('click', (e) => {
+  const d = e.target.dataset;
+  const move = (i, to) => { const a = state.pages; [a[i], a[to]] = [a[to], a[i]]; renderPages(); };
+  if (d.up !== undefined) move(+d.up, +d.up - 1);
+  if (d.down !== undefined) move(+d.down, +d.down + 1);
+  if (d.remove !== undefined) {
+    if (!confirm(`${+d.remove + 1}ページ目を削除しますか？（保存するまで確定しません）`)) return;
+    state.pages.splice(+d.remove, 1);
+    renderPages();
+  }
+  if (d.replace !== undefined) { fileTarget = +d.replace; $('file-input').click(); }
+});
+$('pages').addEventListener('input', (e) => {
+  if (e.target.dataset.alt === undefined) return;
+  state.pages[+e.target.dataset.alt].alt = e.target.value;
+  $('savebar').hidden = !dirty();
+});
+$('page-add').addEventListener('click', () => { fileTarget = 'add'; $('file-input').click(); });
+
+$('file-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (!/^image\//.test(file.type)) return toast('画像ファイルを選んでください。', true);
+  busy(true, '写真を準備しています…');
+  try {
+    const full = await resize(file, 1600, 0.82);
+    const thumb = await resize(file, 520, 0.78, true);
+    const page = { image: { full: full.split(',')[1], thumb: thumb.split(',')[1] }, preview: thumb, tmpId: 'new-' + Date.now() };
+    if (fileTarget === 'add') {
+      state.pages.push({ ...page, alt: '' });
+    } else {
+      state.pages[fileTarget] = { ...page, alt: state.pages[fileTarget].alt };
+    }
+    renderPages();
+  } catch (err) {
+    toast('この写真は使えませんでした。別の写真を選んでください。', true);
+  } finally {
+    busy(false);
+  }
+});
+
+/** Resize in the browser and return a JPEG data URL. byWidth: limit width instead of the long edge. */
+function resize(file, max, quality, byWidth) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / (byWidth ? img.naturalWidth : Math.max(img.naturalWidth, img.naturalHeight)));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * scale);
+      c.height = Math.round(img.naturalHeight * scale);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
+    img.src = url;
+  });
+}
+
+$('menu-revert').addEventListener('click', () => {
+  if (!confirm('保存していない変更を取り消しますか？')) return;
+  state.pages = state.savedPages.map((p) => ({ ...p }));
+  renderPages();
+});
+$('menu-save').addEventListener('click', async () => {
+  for (const p of state.pages) {
+    if (p.alt.length > LIMITS.alt) return toast(`ページ名は${LIMITS.alt}文字までです。`, true);
+    if (hasUrl(p.alt)) return toast('リンク（URL）は入れられません。', true);
+  }
+  busy(true, '保存しています…（写真が多いと少し時間がかかります）');
+  try {
+    const payload = state.pages.map((p) => (p.image ? { image: p.image, alt: p.alt } : { src: p.src, alt: p.alt }));
+    await call('saveMenu', payload, state.baseSha);
+    busy(false);
+    await reload();
+    toast('保存しました。1〜2分でホームページに反映されます。');
+  } catch (e) {
+    busy(false);
+    toast(errMsg(e), true);
+  }
+});
+
+window.addEventListener('beforeunload', (e) => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
+
+reload();
+</script>
+<? } ?>
+</body>
+</html>
