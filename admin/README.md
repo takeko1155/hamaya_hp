@@ -42,10 +42,9 @@
 
 - **GITHUB_TOKEN**：Apps Script の「プロジェクトの設定 → スクリプト プロパティ」に保存。
   fine-grained トークン、対象は `hamaya_hp` のみ、権限は Contents: Read and write。
-  有効期限は作成時の設定どおり（トークン名 `hamaya-admin`）。期限の有無は
-  https://github.com/settings/personal-access-tokens で確認できる。
-  期限付きの場合、切れると保存時にエラーになるので、作り直して貼り替える。
-  無期限の場合は更新不要だが、漏れたと思ったらすぐ上記ページで削除（Revoke）して作り直す。
+  トークン名 `hamaya-admin`、**有効期限なし（無期限）**なので更新は不要。
+  漏れたと思ったら https://github.com/settings/personal-access-tokens ですぐ削除（Revoke）し、
+  作り直してスクリプト プロパティを貼り替える。
 - トークンはこのリポジトリやチャットには書かない。
 
 ## コードを直したとき
