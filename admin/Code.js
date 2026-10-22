@@ -12,7 +12,15 @@
 const REPO = 'takeko1155/hamaya_hp';
 const BRANCH = 'main';
 const SITE_URL = 'https://takeko1155.github.io/hamaya_hp/';
-const ALLOWED_EMAILS = ['（非公開）', '（非公開）'];
+// Who may edit. The repository is public, so addresses are stored only as SHA-256 hashes
+// (of the lower-case address) with a label; neither the code nor commits reveal them.
+// To add someone: node -e "console.log(require('crypto').createHash('sha256').update('x@gmail.com').digest('hex'))"
+const EDITORS = {
+  '1dec0b6f42c5aa1831654ad6f1faa17d6c8c3b0d225e9b2c4ea18c6c5127c0a0': '管理者',
+  'a4f8dcbfd980af636dbbfdb5fcc0d3f734799b349983468099f209050790eeb0': 'お店',
+};
+// author/committer of every save: GitHub's no-reply address, never a real one
+const COMMIT_IDENTITY = { name: 'hamaya-admin', email: 'takeko1155@users.noreply.github.com' };
 
 const NEWS_PATH = 'data/news.json';
 const MENU_PATH = 'data/menu.json';
@@ -24,7 +32,7 @@ const LIMITS = { newsMax: 30, title: 30, body: 300, pages: 20, alt: 30, imageByt
 
 function doGet() {
   const email = currentEmail_();
-  const allowed = ALLOWED_EMAILS.includes(email);
+  const allowed = Boolean(editorLabel_(email));
   const t = HtmlService.createTemplateFromFile('index');
   t.allowed = allowed;
   t.email = email;
@@ -62,7 +70,7 @@ function loadData() {
  * @param {string} baseSha commit the screen was loaded from (detects edits made elsewhere)
  */
 function saveNews(items, baseSha) {
-  const email = assertAllowed_();
+  const editor = assertAllowed_();
   if (!Array.isArray(items) || items.length > LIMITS.newsMax) throw new Error(`お知らせは${LIMITS.newsMax}件までです。`);
   const clean = items.map((it, i) => {
     const no = `${i + 1}件目`;
@@ -78,7 +86,7 @@ function saveNews(items, baseSha) {
   });
   clean.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 
-  const sha = commit_(baseSha, `お知らせを更新（${email}）`, [
+  const sha = commit_(baseSha, `お知らせを更新（${editor}）`, [
     { path: NEWS_PATH, text: JSON.stringify(clean, null, 2) + '\n' },
   ]);
   return { ok: true, sha };
@@ -90,7 +98,7 @@ function saveNews(items, baseSha) {
  * where full/thumb are base64 JPEGs already resized in the browser.
  */
 function saveMenu(pages, baseSha) {
-  const email = assertAllowed_();
+  const editor = assertAllowed_();
   if (!Array.isArray(pages) || pages.length === 0) throw new Error('お品書きは1ページ以上必要です。');
   if (pages.length > LIMITS.pages) throw new Error(`お品書きは${LIMITS.pages}ページまでです。`);
 
@@ -128,7 +136,7 @@ function saveMenu(pages, baseSha) {
 
   current.main.pages = next;
   changes.push({ path: MENU_PATH, text: JSON.stringify(current, null, 2) + '\n' });
-  const sha = commit_(baseSha, `お品書きを更新（${email}）`, changes);
+  const sha = commit_(baseSha, `お品書きを更新（${editor}）`, changes);
   return { ok: true, sha };
 }
 
@@ -138,10 +146,18 @@ function currentEmail_() {
   return (Session.getActiveUser().getEmail() || '').toLowerCase();
 }
 
+function editorLabel_(email) {
+  if (!email) return '';
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, email, Utilities.Charset.UTF_8);
+  const hex = digest.map((b) => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
+  return EDITORS[hex] || '';
+}
+
+/** Throws unless the current user is an editor; returns their label (管理者 / お店). */
 function assertAllowed_() {
-  const email = currentEmail_();
-  if (!ALLOWED_EMAILS.includes(email)) throw new Error('このアカウントには編集の権限がありません。');
-  return email;
+  const label = editorLabel_(currentEmail_());
+  if (!label) throw new Error('このアカウントには編集の権限がありません。');
+  return label;
 }
 
 function isValidDate_(s) {
@@ -233,7 +249,13 @@ function commit_(baseSha, message, changes) {
     return { path: c.path, mode: '100644', type: 'blob', sha: blob.sha };
   });
   const newTree = gh_('post', '/git/trees', { base_tree: head.tree, tree });
-  const commit = gh_('post', '/git/commits', { message, tree: newTree.sha, parents: [head.sha] });
+  const commit = gh_('post', '/git/commits', {
+    message,
+    tree: newTree.sha,
+    parents: [head.sha],
+    author: COMMIT_IDENTITY,
+    committer: COMMIT_IDENTITY,
+  });
   gh_('patch', `/git/refs/heads/${BRANCH}`, { sha: commit.sha, force: false });
   return commit.sha;
 }

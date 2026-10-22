@@ -6,7 +6,7 @@
 
 | 項目 | 内容 |
 |---|---|
-| 持ち主 | **（非公開）**（Apps Script も GitHub も同じアカウント） |
+| 持ち主 | 管理者の Google アカウント（GitHub の takeko1155 と同じアカウント） |
 | 管理画面の URL（お店に渡す） | https://script.google.com/macros/s/AKfycbyltYhRooVgsHJuK2enu0cPeeOw9I7aL8M9jgrLFoP5xm2w_0BAHKGCEF7tIemLO8-4kw/exec |
 | Apps Script の編集画面 | https://script.google.com/d/1XmUQNup62fhaZLC39fVii6S7hHbBch7qItWwL36NrKN0PDqXVTX5Cbeg/edit |
 | コードの置き場所 | このフォルダ（`admin/`）。`clasp push` で Apps Script に送る |
@@ -15,10 +15,9 @@
 
 ## 使える人
 
-`Code.js` の `ALLOWED_EMAILS` に書いたアカウントだけ。
-
-- （非公開）（管理者）
-- （非公開）（お店）
+`Code.js` の `EDITORS` に登録したアカウントだけ（管理者・お店の2つ）。
+リポジトリは公開なので、メールアドレスはハッシュ（元に戻せない値）でだけ持っている。
+保存の履歴（コミット）にもメールアドレスは残らず、「お知らせを更新（お店）」のように表示される。
 
 それ以外のアカウントで開くと「編集の権限がありません」と表示される。
 初めて開くときだけ Google の許可画面が出る（「詳細」→「安全ではないページに移動」→「許可」）。
