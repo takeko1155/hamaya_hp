@@ -11,7 +11,7 @@
 
 const REPO = 'takeko1155/hamaya_hp';
 const BRANCH = 'main';
-const SITE_URL = 'https://takeko1155.github.io/hamaya_hp/';
+const SITE_URL = 'https://hamaya-senzaki.com/';
 // Who may edit. The repository is public, so addresses are stored only as SHA-256 hashes
 // (of the lower-case address) with a label; neither the code nor commits reveal them.
 // To add someone: node -e "console.log(require('crypto').createHash('sha256').update('x@gmail.com').digest('hex'))"

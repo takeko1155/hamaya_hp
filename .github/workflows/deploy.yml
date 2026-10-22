@@ -29,10 +29,6 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/build.mjs
-        env:
-          # preview on takeko1155.github.io/hamaya_hp/ — remove both when switching to hamaya-senzaki.com
-          NOINDEX: '1'
-          BASE_PATH: /hamaya_hp/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
