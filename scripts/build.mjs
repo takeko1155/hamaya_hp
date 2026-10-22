@@ -178,4 +178,51 @@ fs.mkdirSync(DIST, { recursive: true });
 fs.cpSync(path.join(SRC, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), html);
 fs.writeFileSync(path.join(DIST, '.nojekyll'), '');
+
+// Old WordPress URLs (/?p=…, /wp-content/…) land here after the move.
+// BASE_PATH is the site's root path: "/" on hamaya-senzaki.com, "/hamaya_hp/" on the github.io preview.
+const base = process.env.BASE_PATH || '/';
+fs.writeFileSync(
+  path.join(DIST, '404.html'),
+  `<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>ページが見つかりません｜浜屋</title>
+<style>
+  body { margin: 0; min-height: 100svh; display: grid; place-items: center; background: #0e0e0e; color: #fff;
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; letter-spacing: .1em; text-align: center; }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 12px; }
+  p { font-size: 14px; color: #bbb; margin: 0 0 32px; line-height: 2; }
+  a { color: #fff; text-underline-offset: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ページが見つかりません</h1>
+  <p>ホームページを新しくしたため、<br>お探しのページは移動または削除されました。</p>
+  <a href="${base}">浜屋 トップページへ</a>
+</main>
+</body>
+</html>
+`
+);
+
+// While NOINDEX is set (preview) keep crawlers out entirely; otherwise point them at the sitemap.
+fs.writeFileSync(
+  path.join(DIST, 'robots.txt'),
+  process.env.NOINDEX
+    ? 'User-agent: *\nDisallow: /\n'
+    : 'User-agent: *\nAllow: /\n\nSitemap: https://hamaya-senzaki.com/sitemap.xml\n'
+);
+fs.writeFileSync(
+  path.join(DIST, 'sitemap.xml'),
+  `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://hamaya-senzaki.com/</loc><lastmod>${todayJst}</lastmod></url>
+</urlset>
+`
+);
 console.log(`built dist/ — news ${newsItems.length}, menu ${groups.map(([k, g]) => `${k}:${g.pages.length}`).join(' ')}`);
