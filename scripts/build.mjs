@@ -176,6 +176,8 @@ const html = fs
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 fs.cpSync(path.join(SRC, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// favicon.ico etc. must sit at the site root (Google's search-result icon looks for /favicon.ico)
+fs.cpSync(path.join(SRC, 'static'), DIST, { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), html);
 fs.writeFileSync(path.join(DIST, '.nojekyll'), '');
 
