@@ -2,3 +2,5 @@ dist/
 _source/
 node_modules/
 .claude/
+admin/.clasp.json
+admin/LOCAL.md

@@ -7,8 +7,7 @@
 | 項目 | 内容 |
 |---|---|
 | 持ち主 | 管理者の Google アカウント（GitHub の takeko1155 と同じアカウント） |
-| 管理画面の URL（お店に渡す） | https://script.google.com/macros/s/AKfycbyltYhRooVgsHJuK2enu0cPeeOw9I7aL8M9jgrLFoP5xm2w_0BAHKGCEF7tIemLO8-4kw/exec |
-| Apps Script の編集画面 | https://script.google.com/d/1XmUQNup62fhaZLC39fVii6S7hHbBch7qItWwL36NrKN0PDqXVTX5Cbeg/edit |
+| 管理画面の URL・編集画面・ID | 公開しないため `admin/LOCAL.md`（管理者のパソコンだけ。Git 管理外）に記載 |
 | コードの置き場所 | このフォルダ（`admin/`）。`clasp push` で Apps Script に送る |
 | データの保存先 | GitHub `takeko1155/hamaya_hp` の `data/news.json`・`data/menu.json`・`src/assets/menu/` |
 | Google ドライブ | 使わない（画像もドライブに保存しない） |
@@ -51,7 +50,9 @@
 ```bash
 cd admin
 clasp push
-clasp update-deployment AKfycbyltYhRooVgsHJuK2enu0cPeeOw9I7aL8M9jgrLFoP5xm2w_0BAHKGCEF7tIemLO8-4kw
+clasp update-deployment <デプロイID>   # デプロイID は admin/LOCAL.md
 ```
 
 `update-deployment` で同じ URL のまま新しいコードに切り替わる（URL はお店に渡したまま変わらない）。
+`admin/.clasp.json`（スクリプト ID）も公開しないため Git 管理外。別のパソコンで作業するときは
+`clasp clone <スクリプトID>` で作り直す。
