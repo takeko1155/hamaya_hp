@@ -1,0 +1,9 @@
+{
+  // Cloudflare Workers (static assets). Build: node scripts/build.mjs / Deploy: npx wrangler deploy
+  "name": "hamaya",
+  "compatibility_date": "2026-11-05",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
