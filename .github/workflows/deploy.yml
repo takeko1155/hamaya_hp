@@ -7,9 +7,6 @@ on:
   # Apps Script (Google Docs / Slides) calls this when content changes
   repository_dispatch:
     types: [content-updated]
-  # daily safety net; also expires NEW badges and old notices (00:05 JST)
-  schedule:
-    - cron: '5 15 * * *'
 
 permissions:
   contents: read

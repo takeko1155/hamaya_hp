@@ -8,7 +8,7 @@ const SRC = path.join(ROOT, 'src');
 const DIST = path.join(ROOT, 'dist');
 const NEWS_VISIBLE = 3;
 const NEWS_MAX = 10; // newest 3 shown + up to 7 under 過去のお知らせ
-const NEWS_MAX_AGE_DAYS = 365; // older notices drop off automatically
+const NEWS_MAX_AGE_DAYS = 365; // older notices drop off at the next save/build
 
 const errors = [];
 const readJson = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
@@ -46,13 +46,9 @@ const newsItems = (Array.isArray(news) ? news : [])
   .slice(0, NEWS_MAX);
 
 // One line per notice (date + title); the body opens inline. No per-notice pages.
-// "NEW" relies on the daily scheduled build to drop off after NEWS_NEW_DAYS.
-const NEWS_NEW_DAYS = 14;
 const renderNewsItem = (n) => {
   const paras = (n.body ?? []).filter((p) => p.trim());
-  const head = `<time class="news-date" datetime="${esc(n.date)}">${fmtDate(esc(n.date))}</time><span class="news-title">${esc(n.title)}</span>${
-    daysAgo(n.date) <= NEWS_NEW_DAYS ? '<span class="news-new">NEW</span>' : ''
-  }`;
+  const head = `<time class="news-date" datetime="${esc(n.date)}">${fmtDate(esc(n.date))}</time><span class="news-title">${esc(n.title)}</span>`;
   if (!paras.length) return `\n          <li class="news-item"><div class="news-head">${head}</div></li>`;
   return `
           <li class="news-item">

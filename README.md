@@ -11,5 +11,5 @@
 node scripts/build.mjs
 ```
 
-`main` への push、手動実行、`repository_dispatch`（`content-updated`）、毎日 0:05 JST で自動デプロイ。
+`main` への push、手動実行、`repository_dispatch`（`content-updated`）で自動デプロイ。
 プレビュー中は `NOINDEX=1` で検索エンジンに載らないようにしている。

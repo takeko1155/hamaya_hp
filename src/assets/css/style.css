@@ -231,28 +231,26 @@ h1, h2, h3 { font-weight: 600; line-height: 1.5; margin: 0; }
 .news-list { list-style: none; margin: 0 0 22px; padding: 0; border-top: 1px solid var(--line); }
 .news-item { border-bottom: 1px solid var(--line); }
 .news-head {
-  display: grid; grid-template-columns: 6.6em 1fr auto auto; align-items: baseline; gap: 4px 18px;
+  display: grid; grid-template-columns: 6.6em 1fr auto; align-items: baseline; gap: 4px 18px;
   padding: 17px 2px; list-style: none;
 }
 summary.news-head { cursor: pointer; }
 summary.news-head::-webkit-details-marker { display: none; }
 summary.news-head::after {
-  content: "+"; grid-column: 4; font-family: var(--latin); font-size: 20px; line-height: 1; color: var(--muted);
+  content: "+"; grid-column: 3; font-family: var(--latin); font-size: 20px; line-height: 1; color: var(--muted);
   transition: transform .3s;
 }
 details[open] > summary.news-head::after { transform: rotate(45deg); }
 summary.news-head:hover .news-title { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
 .news-date { font-family: var(--serif); font-size: 13px; letter-spacing: .08em; color: var(--muted); }
 .news-title { font-size: 15px; letter-spacing: .08em; line-height: 1.7; }
-.news-new { grid-column: 3; font-family: var(--latin); font-size: 11px; letter-spacing: .15em; border: 1px solid var(--ink); padding: 0 6px; line-height: 1.7; }
 .news-text { font-size: 14px; line-height: 2; color: var(--ink-2); padding: 0 2px 22px calc(6.6em + 18px); }
 .news-text a { word-break: break-all; text-underline-offset: 3px; }
 @media (max-width: 560px) {
-  .news-head { grid-template-columns: 1fr auto auto; padding: 15px 0; }
+  .news-head { grid-template-columns: 1fr auto; padding: 15px 0; }
   .news-date { grid-column: 1; grid-row: 1; font-size: 14px; }
   .news-title { grid-column: 1 / -1; grid-row: 2; padding-right: 28px; }
-  .news-new { grid-column: 2; grid-row: 1; }
-  summary.news-head::after { grid-column: 3; grid-row: 1 / 3; align-self: center; }
+  summary.news-head::after { grid-column: 2; grid-row: 1 / 3; align-self: center; }
   .news-text { padding: 0 0 18px; }
 }
 .news-empty { padding: 26px 0; color: var(--muted); }
