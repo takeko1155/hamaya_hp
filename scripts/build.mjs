@@ -149,7 +149,7 @@ const jsonld = {
   sameAs: ['https://www.instagram.com/hamaya_senzaki/'],
   openingHoursSpecification: [
     { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: '11:30', closes: '15:00' },
-    { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: '18:00', closes: '22:00' },
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: '18:00', closes: '22:00' },
   ],
 };
 
