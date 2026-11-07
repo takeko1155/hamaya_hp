@@ -3,7 +3,7 @@
  *
  * Google Apps Script の Web アプリ。開いた人の Google アカウントを確認し、
  * 許可された人だけが data/news.json・data/menu.json・メニュー画像を
- * GitHub に直接コミットできる。push で GitHub Actions が動いてサイトに反映される。
+ * GitHub に直接コミットできる。push で Cloudflare（Workers Builds）が動いてサイトに反映される。
  *
  * スクリプト プロパティ:
  *   GITHUB_TOKEN  … takeko1155/hamaya_hp の Contents を読み書きできる fine-grained トークン
