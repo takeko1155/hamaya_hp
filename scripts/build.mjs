@@ -88,17 +88,18 @@ const thumbOf = (src) => {
   return fs.existsSync(path.join(SRC, t)) ? t : src;
 };
 
-const renderPages = (g) =>
+// prefix: path from the page to the site root ("" for /, "../" for /en/)
+const renderPages = (g, prefix = '') =>
   (g.pages ?? [])
     .map(
       (p) =>
-        `          <li><button type="button" data-full="${esc(p.src)}"><img src="${esc(thumbOf(p.src))}" alt="${esc(p.alt ?? g.label)}" width="520" height="736" loading="lazy" decoding="async"><span class="cap">${esc(p.alt ?? '')}</span></button></li>`
+        `          <li><button type="button" data-full="${prefix}${esc(p.src)}"><img src="${prefix}${esc(thumbOf(p.src))}" alt="${esc(p.alt ?? g.label)}" width="520" height="736" loading="lazy" decoding="async"><span class="cap">${esc(p.alt ?? '')}</span></button></li>`
     )
     .join('\n');
 
 // With a single menu group there is nothing to switch, so render it without tabs.
 const singleMenu = groups.length === 1;
-const menuHtml = singleMenu ? renderSingleMenu(groups[0]) : `      <div class="menu-tabs" role="tablist" aria-label="お品書きの種類">
+const renderMenu = (prefix = '') => singleMenu ? renderSingleMenu(groups[0], prefix) : `      <div class="menu-tabs" role="tablist" aria-label="お品書きの種類">
 ${groups
   .map(
     ([key, g], i) =>
@@ -111,17 +112,17 @@ ${groups
     ([key, g], i) => `      <div class="menu-panel" id="panel-${key}" role="tabpanel" aria-labelledby="tab-${key}"${i ? ' hidden' : ''}>
 ${g.note ? `        <p class="menu-panel-note">${esc(g.note)}</p>
 ` : ''}        <ul class="menu-grid">
-${renderPages(g)}
+${renderPages(g, prefix)}
         </ul>
       </div>`
   )
   .join('\n')}`;
 
-function renderSingleMenu([key, g]) {
+function renderSingleMenu([key, g], prefix) {
   return `      <div class="menu-panel" id="panel-${key}">
 ${g.note ? `        <p class="menu-panel-note">${esc(g.note)}</p>
 ` : ''}        <ul class="menu-grid">
-${renderPages(g)}
+${renderPages(g, prefix)}
         </ul>
       </div>`;
 }
@@ -160,14 +161,30 @@ if (errors.length) {
 }
 
 const version = Date.now().toString(36);
-const html = fs
-  .readFileSync(path.join(SRC, 'index.html'), 'utf8')
-  .replace('<!--NEWS-->', newsHtml)
-  .replace('<!--MENU-->', menuHtml)
-  // NOINDEX=1 while the site is a preview, so search engines don't index the draft
-  .replace('<!--ROBOTS-->', process.env.NOINDEX ? '<meta name="robots" content="noindex, nofollow">' : '')
-  .replace('<!--JSONLD-->', `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>`)
-  .replaceAll('{{VERSION}}', version);
+const SITE = 'https://hamaya-senzaki.com/';
+// The English page (/en/) has no news: notices are written in Japanese only.
+// Its menu uses the same images, so it follows the shop's updates automatically.
+const hreflang = [
+  `<link rel="alternate" hreflang="ja" href="${SITE}">`,
+  `<link rel="alternate" hreflang="en" href="${SITE}en/">`,
+  `<link rel="alternate" hreflang="x-default" href="${SITE}">`,
+].join('\n');
+const renderPage = (file, prefix, extra = {}) => {
+  let out = fs
+    .readFileSync(path.join(SRC, file), 'utf8')
+    .replace('<!--HREFLANG-->', hreflang)
+    .replace('<!--MENU-->', renderMenu(prefix))
+    // NOINDEX=1 while the site is a preview, so search engines don't index the draft
+    .replace('<!--ROBOTS-->', process.env.NOINDEX ? '<meta name="robots" content="noindex, nofollow">' : '')
+    .replaceAll('{{VERSION}}', version);
+  for (const [marker, value] of Object.entries(extra)) out = out.replace(marker, value);
+  return out;
+};
+const html = renderPage('index.html', '', {
+  '<!--NEWS-->': newsHtml,
+  '<!--JSONLD-->': `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>`,
+});
+const htmlEn = renderPage('en/index.html', '../');
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -175,6 +192,8 @@ fs.cpSync(path.join(SRC, 'assets'), path.join(DIST, 'assets'), { recursive: true
 // favicon.ico etc. must sit at the site root (Google's search-result icon looks for /favicon.ico)
 fs.cpSync(path.join(SRC, 'static'), DIST, { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), html);
+fs.mkdirSync(path.join(DIST, 'en'), { recursive: true });
+fs.writeFileSync(path.join(DIST, 'en', 'index.html'), htmlEn);
 fs.writeFileSync(path.join(DIST, '.nojekyll'), '');
 
 // Old WordPress URLs (/?p=…, /wp-content/…) land here after the move.
@@ -220,6 +239,7 @@ fs.writeFileSync(
   `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://hamaya-senzaki.com/</loc><lastmod>${todayJst}</lastmod></url>
+  <url><loc>https://hamaya-senzaki.com/en/</loc><lastmod>${todayJst}</lastmod></url>
 </urlset>
 `
 );

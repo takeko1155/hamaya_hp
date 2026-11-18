@@ -3,6 +3,8 @@
 活魚料理・うに釜めし 浜屋（山口県長門市仙崎）の静的サイト。Cloudflare Workers（静的アセット、Worker 名 `hamaya-hp`）で公開。
 
 - `src/` … ページのテンプレート・CSS・JS・画像
+- `src/en/index.html` … 英語ページ（`/en/`）。お知らせは載せず、お品書きは日本語ページと同じ画像。
+  営業時間・定休日・住所を変えたときは、こちらも手で直す
 - `data/news.json` … お知らせ
 - `data/menu.json` … お品書き（画像）
 - `scripts/build.mjs` … `data/` を差し込んで `dist/` を生成（依存なし）

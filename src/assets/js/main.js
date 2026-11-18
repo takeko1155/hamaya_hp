@@ -43,7 +43,7 @@
   const setNav = (open) => {
     root.classList.toggle('nav-open', open);
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'メニューを閉じる' : 'メニューを開く');
+    toggle.setAttribute('aria-label', open ? toggle.dataset.labelClose || 'メニューを閉じる' : toggle.dataset.labelOpen || 'メニューを開く');
   };
   toggle.addEventListener('click', () => setNav(!root.classList.contains('nav-open')));
   document.querySelectorAll('.global-nav a').forEach((a) => a.addEventListener('click', () => setNav(false)));
